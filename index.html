@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Futures Risk Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --border: #e0e0e0;
+    --black: #111111;
+    --gray: #555555;
+    --lgray: #999999;
+    --green: #1a7a3e;
+    --red: #c0392b;
+    --panel: #f8f8f8;
+    --font-body: 'IBM Plex Sans', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  html, body {
+    min-height: 100%;
+    background: var(--bg);
+    font-family: var(--font-body);
+    color: var(--black);
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 24px 40px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  header span {
+    font-size: 0.85rem;
+    color: var(--lgray);
+    font-family: var(--font-mono);
+    letter-spacing: 0.05em;
+  }
+
+  /* ── LAYOUT ── */
+  .app {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 0;
+    min-height: calc(100vh - 69px - 44px);
+  }
+
+  /* ── LEFT PANEL ── */
+  .left {
+    padding: 28px 32px;
+    border-right: 1px solid var(--border);
+    background: var(--panel);
+  }
+
+  .section-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--lgray);
+    margin-bottom: 12px;
+    margin-top: 24px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-label:first-child { margin-top: 0; }
+
+  .field {
+    margin-bottom: 12px;
+  }
+  .field label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--gray);
+    margin-bottom: 4px;
+  }
+  .field select,
+  .field input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-family: var(--font-mono);
+    background: #fff;
+    color: var(--black);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field select:focus,
+  .field input:focus {
+    border-color: #888;
+  }
+
+  .spec-bar {
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    color: var(--lgray);
+    margin-top: 8px;
+    line-height: 1.6;
+  }
+
+  .calc-btn {
+    width: 100%;
+    margin-top: 24px;
+    padding: 11px;
+    background: var(--black);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-family: var(--font-body);
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: background 0.15s;
+  }
+  .calc-btn:hover { background: #333; }
+
+  /* ── RIGHT PANEL ── */
+  .right {
+    padding: 28px 40px;
+  }
+
+  /* summary */
+  .summary {
+    display: flex;
+    gap: 48px;
+    align-items: flex-end;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+  }
+  .summary-item {}
+  .summary-item .big {
+    font-size: 2.4rem;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .summary-item .big.green { color: var(--green); }
+  .summary-item .big.red   { color: var(--red); }
+  .summary-item .big.black { color: var(--black); }
+  .summary-item .sub {
+    font-size: 0.78rem;
+    color: var(--lgray);
+    margin-top: 4px;
+  }
+
+  /* result sections */
+  .result-section {
+    margin-top: 22px;
+  }
+  .result-section h3 {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--lgray);
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 10px;
+  }
+
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    font-size: 0.9rem;
+  }
+  .result-row .rlabel { color: var(--gray); }
+  .result-row .rvalue {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .result-row .rvalue.green { color: var(--green); }
+  .result-row .rvalue.red   { color: var(--red); }
+  .result-row .rvalue.black { color: var(--black); }
+
+  /* ── FOOTER ── */
+  footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 40px;
+    border-top: 1px solid var(--border);
+    background: var(--panel);
+    font-size: 0.75rem;
+    color: var(--lgray);
+  }
+  footer .copyright {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--gray);
+    letter-spacing: 0.03em;
+  }
+
+  @media (max-width: 700px) {
+    .app { grid-template-columns: 1fr; }
+    .left { border-right: none; border-bottom: 1px solid var(--border); }
+    header { padding: 16px 20px; }
+    .right { padding: 20px; }
+    footer { padding: 10px 20px; flex-direction: column; gap: 4px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Futures Risk Calculator</h1>
+  <span>NQ &nbsp;·&nbsp; MNQ &nbsp;·&nbsp; YM &nbsp;·&nbsp; MYM</span>
+</header>
+
+<div class="app">
+
+  <!-- ── LEFT: INPUTS ── -->
+  <div class="left">
+
+    <div class="section-label">Contract</div>
+
+    <div class="field">
+      <label>Instrument</label>
+      <select id="contract">
+        <option value="NQ">NQ – Nasdaq-100 Futures</option>
+        <option value="MNQ">MNQ – Micro Nasdaq-100</option>
+        <option value="YM">YM – Dow Jones Futures</option>
+        <option value="MYM">MYM – Micro Dow Jones</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Contracts (qty)</label>
+      <input type="number" id="qty" value="1" min="1" step="1">
+    </div>
+
+    <div class="spec-bar" id="specBar">—</div>
+
+    <div class="section-label">Account</div>
+
+    <div class="field">
+      <label>Account Size ($)</label>
+      <input type="number" id="account" value="50000" min="0" step="100">
+    </div>
+
+    <div class="field">
+      <label>Max Risk (%)</label>
+      <input type="number" id="riskPct" value="1.0" min="0" step="0.1">
+    </div>
+
+    <div class="section-label">Trade Parameters</div>
+
+    <div class="field">
+      <label>Dollar Risk ($)</label>
+      <input type="number" id="dollarRisk" value="500" min="0" step="10">
+    </div>
+
+    <div class="field">
+      <label>Take Profit Target ($)</label>
+      <input type="number" id="dollarTP" value="1000" min="0" step="10">
+    </div>
+
+    <button class="calc-btn" onclick="calculate()">Calculate</button>
+
+  </div>
+
+  <!-- ── RIGHT: RESULTS ── -->
+  <div class="right">
+
+    <!-- summary -->
+    <div class="summary">
+      <div class="summary-item">
+        <div class="big green" id="sumTP">$—</div>
+        <div class="sub">take profit</div>
+      </div>
+      <div class="summary-item">
+        <div class="big red" id="sumRisk">$—</div>
+        <div class="sub">total risk</div>
+      </div>
+      <div class="summary-item">
+        <div class="big black" id="sumRR">—</div>
+        <div class="sub">R : R</div>
+      </div>
+    </div>
+
+    <!-- Take Profit -->
+    <div class="result-section">
+      <h3>Take Profit</h3>
+      <div class="result-row"><span class="rlabel">Ticks to target</span><span class="rvalue green" id="tpTicks">—</span></div>
+      <div class="result-row"><span class="rlabel">Points to target</span><span class="rvalue green" id="tpPts">—</span></div>
+      <div class="result-row"><span class="rlabel">Per contract ($)</span><span class="rvalue green" id="tpPerC">—</span></div>
+      <div class="result-row"><span class="rlabel">Total profit ($)</span><span class="rvalue green" id="tpTotal">—</span></div>
+    </div>
+
+    <!-- Stop Loss -->
+    <div class="result-section">
+      <h3>Stop Loss</h3>
+      <div class="result-row"><span class="rlabel">Ticks to stop</span><span class="rvalue red" id="slTicks">—</span></div>
+      <div class="result-row"><span class="rlabel">Points to stop</span><span class="rvalue red" id="slPts">—</span></div>
+      <div class="result-row"><span class="rlabel">Per contract ($)</span><span class="rvalue red" id="slPerC">—</span></div>
+      <div class="result-row"><span class="rlabel">Total risk ($)</span><span class="rvalue red" id="slTotal">—</span></div>
+    </div>
+
+    <!-- Account Check -->
+    <div class="result-section">
+      <h3>Account Check</h3>
+      <div class="result-row"><span class="rlabel">% of account risked</span><span class="rvalue black" id="acctPct">—</span></div>
+      <div class="result-row"><span class="rlabel">Max $ risk allowed</span><span class="rvalue black" id="acctMax">—</span></div>
+      <div class="result-row"><span class="rlabel">Within risk limit?</span><span class="rvalue black" id="acctOk">—</span></div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <span>For educational purposes only. Futures trading involves substantial risk of loss.</span>
+  <span class="copyright">© AshTradesFutures</span>
+</footer>
+
+<script>
+  const CONTRACTS = {
+    NQ:  { tick: 0.25, tickValue: 5.00,  margin: 18000 },
+    MNQ: { tick: 0.25, tickValue: 0.50,  margin: 1800  },
+    YM:  { tick: 1.00, tickValue: 5.00,  margin: 12000 },
+    MYM: { tick: 1.00, tickValue: 0.50,  margin: 1200  },
+  };
+
+  function fmt(n, prefix='$', dec=2) {
+    return prefix + n.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  }
+
+  function updateSpec() {
+    const key  = document.getElementById('contract').value;
+    const spec = CONTRACTS[key];
+    const pv   = spec.tickValue / spec.tick;
+    document.getElementById('specBar').textContent =
+      `tick ${spec.tick}  ·  tick value $${spec.tickValue}  ·  point value $${pv.toFixed(2)}  ·  margin ~$${spec.margin.toLocaleString()}`;
+  }
+
+  function set(id, text, colorClass) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    if (colorClass) {
+      el.className = 'rvalue ' + colorClass;
+    }
+  }
+
+  function calculate() {
+    const key       = document.getElementById('contract').value;
+    const spec      = CONTRACTS[key];
+    const qty       = Math.max(1, parseInt(document.getElementById('qty').value) || 1);
+    const account   = parseFloat(document.getElementById('account').value) || 0;
+    const riskPct   = (parseFloat(document.getElementById('riskPct').value) || 0) / 100;
+    const dollarRisk = parseFloat(document.getElementById('dollarRisk').value) || 0;
+    const dollarTP   = parseFloat(document.getElementById('dollarTP').value) || 0;
+
+    if (dollarRisk <= 0 || dollarTP <= 0 || account <= 0) return;
+
+    // Stop loss
+    const ticksToStop = dollarRisk / (qty * spec.tickValue);
+    const ptsToStop   = ticksToStop * spec.tick;
+    const riskPerC    = dollarRisk / qty;
+
+    // Take profit
+    const ticksToTP  = dollarTP / (qty * spec.tickValue);
+    const ptsToTP    = ticksToTP * spec.tick;
+    const profitPerC = dollarTP / qty;
+
+    // R:R & account
+    const rr          = dollarTP / dollarRisk;
+    const maxRisk     = account * riskPct;
+    const withinLimit = dollarRisk <= maxRisk;
+    const pctRisked   = (dollarRisk / account) * 100;
+
+    // Summary
+    document.getElementById('sumTP').textContent   = fmt(dollarTP);
+    document.getElementById('sumRisk').textContent = fmt(dollarRisk);
+    document.getElementById('sumRR').textContent   = '1 : ' + rr.toFixed(2);
+
+    // Take Profit rows
+    document.getElementById('tpTicks').textContent = ticksToTP.toFixed(1);
+    document.getElementById('tpPts').textContent   = ptsToTP.toFixed(2);
+    document.getElementById('tpPerC').textContent  = fmt(profitPerC);
+    document.getElementById('tpTotal').textContent = fmt(dollarTP);
+
+    // Stop Loss rows
+    document.getElementById('slTicks').textContent = ticksToStop.toFixed(1);
+    document.getElementById('slPts').textContent   = ptsToStop.toFixed(2);
+    document.getElementById('slPerC').textContent  = fmt(riskPerC);
+    document.getElementById('slTotal').textContent = fmt(dollarRisk);
+
+    // Account Check
+    const pctEl = document.getElementById('acctPct');
+    pctEl.textContent = pctRisked.toFixed(2) + '%';
+    pctEl.className   = 'rvalue ' + (pctRisked > riskPct * 100 ? 'red' : 'black');
+
+    document.getElementById('acctMax').textContent = fmt(maxRisk);
+
+    const okEl = document.getElementById('acctOk');
+    okEl.textContent = withinLimit ? 'Yes' : 'No';
+    okEl.className   = 'rvalue ' + (withinLimit ? 'green' : 'red');
+  }
+
+  // live update on any input change
+  document.querySelectorAll('input, select').forEach(el => {
+    el.addEventListener('input', () => { updateSpec(); calculate(); });
+  });
+
+  // init
+  updateSpec();
+  calculate();
+</script>
+</body>
+</html>
