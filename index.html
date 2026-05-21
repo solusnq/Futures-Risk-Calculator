@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Futures Risk Calculator</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>Futures Position Size Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -18,7 +18,7 @@
     --red: #c0392b;
     --panel: #f8f8f8;
     --font-body: 'IBM Plex Sans', sans-serif;
-    --font-mono: 'IBM Plex Mono', monospace;
+    --font-mono: Arial, sans-serif;
   }
 
   html, body {
@@ -222,8 +222,8 @@
 <body>
 
 <header>
-  <h1>Futures Risk Calculator</h1>
-  <span>NQ &nbsp;·&nbsp; MNQ &nbsp;·&nbsp; YM &nbsp;·&nbsp; MYM</span>
+  <h1>Futures Position Size Calculator</h1>
+  <span>NQ &nbsp;·&nbsp; ES &nbsp;·&nbsp; YM &nbsp;·&nbsp; GC &nbsp;·&nbsp; SI &nbsp;·&nbsp; CL &nbsp;·&nbsp; FX &nbsp;·&nbsp; Bonds</span>
 </header>
 
 <div class="app">
@@ -238,8 +238,23 @@
       <select id="contract">
         <option value="NQ">NQ – Nasdaq-100 Futures</option>
         <option value="MNQ">MNQ – Micro Nasdaq-100</option>
+        <option value="ES">ES – S&P 500 Futures</option>
+        <option value="MES">MES – Micro S&P 500</option>
         <option value="YM">YM – Dow Jones Futures</option>
         <option value="MYM">MYM – Micro Dow Jones</option>
+        <option value="RTY">RTY – Russell 2000 Futures</option>
+        <option value="M2K">M2K – Micro Russell 2000</option>
+        <option value="GC">GC – Gold Futures</option>
+        <option value="MGC">MGC – Micro Gold</option>
+        <option value="SI">SI – Silver Futures</option>
+        <option value="SIL">SIL – Micro Silver</option>
+        <option value="CL">CL – Crude Oil Futures</option>
+        <option value="MCL">MCL – Micro Crude Oil</option>
+        <option value="6E">6E – Euro FX Futures</option>
+        <option value="6B">6B – British Pound Futures</option>
+        <option value="6J">6J – Japanese Yen Futures</option>
+        <option value="ZB">ZB – 30-Year T-Bond</option>
+        <option value="ZN">ZN – 10-Year T-Note</option>
       </select>
     </div>
 
@@ -328,15 +343,30 @@
 
 <footer>
   <span>For educational purposes only. Futures trading involves substantial risk of loss.</span>
-  <span class="copyright">© AshTradesFutures</span>
+  <span class="copyright">© SolusNQ</span>
 </footer>
 
 <script>
   const CONTRACTS = {
-    NQ:  { tick: 0.25, tickValue: 5.00,  margin: 18000 },
-    MNQ: { tick: 0.25, tickValue: 0.50,  margin: 1800  },
-    YM:  { tick: 1.00, tickValue: 5.00,  margin: 12000 },
-    MYM: { tick: 1.00, tickValue: 0.50,  margin: 1200  },
+    NQ:  { tick: 0.25, tickValue: 5.00,   margin: 18000 },
+    MNQ: { tick: 0.25, tickValue: 0.50,   margin: 1800  },
+    ES:  { tick: 0.25, tickValue: 12.50,  margin: 15000 },
+    MES: { tick: 0.25, tickValue: 1.25,   margin: 1500  },
+    YM:  { tick: 1.00, tickValue: 5.00,   margin: 12000 },
+    MYM: { tick: 1.00, tickValue: 0.50,   margin: 1200  },
+    RTY: { tick: 0.10, tickValue: 5.00,   margin: 8000  },
+    M2K: { tick: 0.10, tickValue: 0.50,   margin: 800   },
+    GC:  { tick: 0.10, tickValue: 10.00,  margin: 12000 },
+    MGC: { tick: 0.10, tickValue: 1.00,   margin: 1200  },
+    SI:  { tick: 0.005,tickValue: 25.00,  margin: 16000 },
+    SIL: { tick: 0.005,tickValue: 2.50,   margin: 1600  },
+    CL:  { tick: 0.01, tickValue: 10.00,  margin: 8000  },
+    MCL: { tick: 0.01, tickValue: 1.00,   margin: 800   },
+    '6E':{ tick: 0.00005, tickValue: 6.25, margin: 3000 },
+    '6B':{ tick: 0.0001,  tickValue: 6.25, margin: 3000 },
+    '6J':{ tick: 0.0000005, tickValue: 6.25, margin: 3000 },
+    ZB:  { tick: 0.03125, tickValue: 31.25, margin: 4000 },
+    ZN:  { tick: 0.015625, tickValue: 15.625, margin: 2000 },
   };
 
   function fmt(n, prefix='$', dec=2) {
